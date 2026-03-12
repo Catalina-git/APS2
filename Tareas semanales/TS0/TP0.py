@@ -1,4 +1,4 @@
-# Primero importo las librerias
+#%% Primero importo las librerias
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -33,14 +33,12 @@ fs = 1000
 tt, xx = mi_funcion_sen(amplitud, offset, frecuencia, fase, N, fs)
 
 # Grafico la señal
-plt.title("Señal Senoidal Generada")
+plt.title("Señal Senoidal Generada con una frecuencia de 5Hz")
 plt.xlabel('Tiempo [s]')
 plt.ylabel('Amplitud [V]')
 plt.plot(tt, xx, linestyle = '-', color = 'r' ) # Genero el grafico de la señal con linea 'continua' de color 'rojo'
 
-# --------------------------------------- EJERCICIO BONUS --------------------------------------- 
-
-# --------------------------------------- ITEM 1 ---------------------------------------
+#%% --------------------------------------- ITEM 1 (EJERCICIO BONUS) ---------------------------------------
 # Genero otra ventana para los graficos
 plt.figure(figsize=(10, 6))  # Tamaño de la figura (ancho, alto)
 
@@ -48,7 +46,7 @@ plt.figure(figsize=(10, 6))  # Tamaño de la figura (ancho, alto)
 plt.subplot(2, 2, 1)
 tt, xx = mi_funcion_sen(1, 0, 500, 0, 1000, 50000)
 plt.plot(tt, xx, '-', color='blue')
-plt.title("Señal Senoidal con 500 Hz")
+plt.title("Señal Senoidal con una frecuencia de 500 Hz")
 plt.xlabel("Tiempo [s]")
 plt.ylabel("Amplitud [V]")
 plt.grid(True)
@@ -57,7 +55,7 @@ plt.grid(True)
 plt.subplot(2, 2, 2)
 tt, xx = mi_funcion_sen(1, 0, 999, 0, 1000, 100000)
 plt.plot(tt, xx, '-', color='green')
-plt.title("Señal Senoidal con 999 Hz")
+plt.title("Señal Senoidal con una frecuencia de 999 Hz")
 plt.xlabel("Tiempo [s]")
 plt.ylabel("Amplitud [V]")
 plt.grid(True)
@@ -66,7 +64,7 @@ plt.grid(True)
 plt.subplot(2, 2, 3)
 tt, xx = mi_funcion_sen(1, 0, 1001, 0, 1000, 100000)
 plt.plot(tt, xx, '-', color='orange')
-plt.title("Señal Senoidal con 1001 Hz")
+plt.title("Señal Senoidal con una frecuencia de 1001 Hz")
 plt.xlabel("Tiempo [s]")
 plt.ylabel("Amplitud [V]")
 plt.grid(True)
@@ -75,7 +73,7 @@ plt.grid(True)
 plt.subplot(2, 2, 4)
 tt, xx = mi_funcion_sen(1, 0, 2001, 0, 1000, 100000)
 plt.plot(tt, xx, '-', color='grey')
-plt.title("Señal Senoidal con 2001 Hz")
+plt.title("Señal Senoidal con una frecuencia de 2001 Hz")
 plt.xlabel("Tiempo [s]")
 plt.ylabel("Amplitud [V]")
 plt.grid(True)
@@ -83,7 +81,7 @@ plt.grid(True)
 plt.tight_layout()  
 plt.show()
 
-# --------------------------------------- ITEM 2 ---------------------------------------
+#%% --------------------------------------- ITEM 2 (EJERCICIO BONUS) ---------------------------------------
 
 # --------------------------------------- Grafico una señal cuadrada ---------------------------------------
 
@@ -111,7 +109,7 @@ ttc, xxc = mi_funcion_cuadrada(frecuencia, fs, N, offset, fase)
 # Graficamos la señal cuadrada generada
 plt.figure(figsize=(10, 4))
 plt.plot(ttc, xxc, label='Señal Cuadrada')
-plt.title('Generación de Señal Cuadrada')
+plt.title('Generación de Señal Cuadrada con una frecuencia de 4Hz')
 plt.xlabel('Tiempo [s]')
 plt.ylabel('Amplitud')
 plt.grid(True)
@@ -153,5 +151,59 @@ plt.show()
 
 """
 
+# --------------------------------------- Grafico el impulso unitario ---------------------------------------
+# Defino mi funcion impulso unitario
+def mi_impulso(posicion = 0, N = 21, fs = 1):
+    """
+    posicion: lugar donde aparece el impulso
+    N: cantidad de muestras
+    fs: frecuencia de muestreo
+    """
 
+    Ts = 1/fs
+
+    tt = np.arange(start = 0, stop = N*Ts, step = Ts)
+
+    # Genero el impulso con la funcion de scipy
+    xx = signal.unit_impulse(N, idx = posicion) 
+
+    return tt, xx
+
+
+# Defino variables
+N = 21 # ¿?
+fs = 1
+posicion = 10
+
+# Llamo a la funcion
+tt, xx = mi_impulso(posicion, N, fs)
+
+# Grafico
+plt.figure(figsize=(10, 4))
+plt.title("Impulso Unitario δ[n]")
+plt.xlabel("Tiempo [s]")
+plt.ylabel("Amplitud [V]")
+
+plt.stem (tt, xx)
+plt.grid(True)
+
+plt.show()
+
+# Cantidad de muestras
+N = 21
+
+# Eje discreto centrado
+n = np.arange(-(N//2), N//2 + 1) # ¿?
+
+# Impulso en n = 0
+xx = signal.unit_impulse(N, idx = N//2)
+
+plt.figure(figsize=(10, 4))
+plt.stem(n, xx)
+plt.xlabel("Tiempo [s]")
+plt.ylabel("Amplitud [V]")
+plt.title("Impulso unitario δ[n]")
+plt.grid(True)
+
+plt.show()
 
