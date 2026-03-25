@@ -26,8 +26,8 @@ amplitud = 1
 offset = 0
 frecuencia = 2000 # 2kHz = 2000 Hz
 fase = 0
-N = 100 # Cantidad de muestras
-fs = 20000 # Pongo fs > 2 * frecuencia --> Teorema de Nyquist-Shannon 
+N = 200 # Cantidad de muestras
+fs = 60000 # Pongo fs > 2 * frecuencia --> Teorema de Nyquist-Shannon 
 
 # Llamo a mi funcion
 _,f1 = ts1.mi_funcion_sen(amplitud, offset, frecuencia, fase, N, fs)
@@ -43,6 +43,7 @@ plt.xlabel('Tiempo [s]')
 plt.ylabel('Amplitud [V]')
 plt.plot(_,f1,  label = 'Sinusoidal de 2kHz')
 plt.legend()
+plt.grid()
 plt.show()
 
 # TIEMPO ENTRE MUESTRAS
@@ -60,8 +61,8 @@ amplitud = 2
 offset = 0
 frecuencia = 2000 # 2kHz = 2000 Hz
 fase = np.pi/2
-N = 100 # Cantidad de muestras
-fs = 20000
+N = 200 # Cantidad de muestras
+fs = 60000
 
 # Llamo a mi funcion
 _,f2 = ts1.mi_funcion_sen(amplitud, offset, frecuencia, fase, N, fs) 
@@ -99,8 +100,8 @@ amplitud = 1
 offset = 0
 frecuencia = 2000 # 2kHz = 2000 Hz
 fase = 0
-N = 100 # Cantidad de muestras
-fs = 20000
+N = 200 # Cantidad de muestras
+fs = 60000
 
 # Llamo a mi funcion
 _,f3 = ts1.mi_funcion_sen_modulada(amplitud, offset, frecuencia, fase, N, fs)
@@ -137,8 +138,8 @@ amplitud = 1
 offset = 0
 frecuencia = 2000 # 2kHz = 2000 Hz
 fase = 0
-N = 100 # Cantidad de muestras
-fs = 20000
+N = 200 # Cantidad de muestras
+fs = 60000
 
 # Llamo a mi funcion
 _,f4 = ts1.mi_funcion_sen_recortada(amplitud, offset, frecuencia, fase, N, fs)
@@ -172,7 +173,7 @@ print("Potencia de la señal f4: ", x)
 # ------------------------------- Señal cuadrada de 4kHz -------------------------------
 # Defino mis variables
 frecuencia = 4000
-fs = 20000
+fs = 60000
 N = 50 # Cantidad de muestras
 offset = 0
 fase = 0
@@ -205,7 +206,7 @@ print("Potencia de la señal f5: ", x)
 t0 = 1 # Tiempo donde empieza el pulso
 tf = 11 # Tiempo donde termina el pulso 
 # --> Con este t0 y tf mi pulso rectangular dura 10ms
-N = 100 # Cantidad de muestras
+N = 200 # Cantidad de muestras
 h = 1 # Altura del pulso 
 
 # Llamo a mi funcion
@@ -214,7 +215,7 @@ f6 = ts1.mi_funcion_pulso(t0, tf, N, h)
 # Grafico
 plt.subplot(1,2,2)
 plt.title('Pulso rectangular de 10ms')
-plt.plot(f6, 'o-', label = 'Pulso rectangular de 10ms')
+plt.plot(f6, label = 'Pulso rectangular de 10ms')
 # otra manera de graficar el pulso: 
 # plt.stem(x)
 plt.xlabel('Tiempo[ms]')
