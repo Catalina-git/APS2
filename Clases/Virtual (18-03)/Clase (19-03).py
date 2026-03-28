@@ -210,3 +210,40 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
+#%% ESPECTRO DE LA SEÑAL Y EL RUIDO 
+
+# Señal
+XXmod = XXmod / len(XX)
+XXmod_db = 20 * np.log10(XXmod)
+
+# Ruido 
+U_N = np.fft.fft(U_n)
+UN_mod = np.abs(U_N)
+UN_mod = np.abs(U_N) / len(U_N)
+UN_mod_db = 20 * np.log10(UN_mod)
+
+# Eje de frecuencias
+freqs = np.fft.fftfreq(len(xx), d=ts)
+
+# Como voy a graficar el modulo, solo quiero la primer mitad de la señal, ya que al ser par luego se repite
+mitad = len(freqs) // 2
+freqs = freqs[:mitad]
+XXmod_db = XXmod_db[:mitad]
+UN_mod_db = UN_mod_db[:mitad]
+
+# Grafico
+plt.figure()
+plt.plot(freqs, XXmod_db, label = 'Señal pura')
+plt.plot(freqs, UN_mod_db, label = 'Ruido')
+plt.legend()
+plt.title("Espectro de la señal original y el ruido")
+plt.xlabel("Frecuencia [Hz]")
+plt.ylabel("Magnitud [dB]")
+plt.grid()
+plt.show()
+
+# Yo defini SNR = 30, lo que significa que la potencia de la señal es 10^(30/10) = 1000 veces mayor que la potencia del ruido
+# En terminos de amplitud, eso significa que el pico de la senoidal deberia estar unos 30dB por encima del piso de ruido
+
+ 
+
