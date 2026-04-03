@@ -97,10 +97,10 @@ print("Potencia de la señal f2: ", x)
 # Defino mis variables
 amplitud = 1
 offset = 0
-frecuencia = 1000 # 2kHz = 2000 Hz
+frecuencia = 1e6   # 1 MHz --> Es la frecuencia modulada
 fase = 0
 N = 200 # Cantidad de muestras
-fs = 60000
+fs = 10e6   # 10 MHz (para ver bien la portadora)
 
 # Llamo a mi funcion
 _,f3 = ts1.mi_funcion_sen_modulada(amplitud, offset, frecuencia, fase, N, fs)
@@ -260,7 +260,7 @@ h = delta(n) - delta(n - 4)
 
 # a) x[n] = cos(w0 * n * Ts)
 # Elijo valores de w0 y de Ts para poder graficar
-w0 = 0.5
+w0 = np.pi / 2
 Ts = 1
 
 xa = np.cos(w0 * n * Ts)
