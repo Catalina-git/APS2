@@ -22,7 +22,7 @@ q = (2*VF) / (2**B)   # paso de cuantización
 Pq = (q**2) / 12      # potencia de cuantización
 
 # Defino el ruido
-kn = 1
+kn = 10
 Pn = kn * Pq
 mu = 0
 U_n = np.random.normal(mu, np.sqrt(Pn), n)
@@ -64,8 +64,8 @@ SRmod_db = SRmod_db[:mitad]
 SQmod_db = SQmod_db[:mitad]
 
 # Pisos teóricos
-piso_analog = 10 * np.log10(Pn)
-piso_digital = 10 * np.log10(Pq)
+piso_analog = 10 * np.log10(Pn / (n))
+piso_digital = 10 * np.log10(Pq / (n))
 
 #%% Error de cuantización
 e = sq - sr
@@ -91,7 +91,7 @@ plt.show()
 plt.figure()
 
 plt.plot(freqs, SQmod_db, label=r'$s_Q = Q_B(s_R)$ (ADC out)')
-plt.plot(freqs, XXmod_db, '--', label='s (analog)')
+# plt.plot(freqs, XXmod_db, '--', label='s (analog)')
 plt.plot(freqs, SRmod_db, ':', label=r'$s_R = s + n$ (ADC in)')
 
 plt.axhline(piso_analog, linestyle='--', label=f'{piso_analog:.2f} dB (piso analógico)')
@@ -132,7 +132,7 @@ q = (2*VF) / (2**B)   # paso de cuantización
 Pq = (q**2) / 12      # potencia de cuantización
 
 # Defino el ruido
-kn = 1
+kn = 1 
 Pn = kn * Pq
 mu = 0
 U_n = np.random.normal(mu, np.sqrt(Pn), n)
