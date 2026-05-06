@@ -315,5 +315,79 @@ plt.show()
 # si no voy a variar la fs, solo me queda aumentar N, y asi voy a poder diferenciar dos señales muy cercanas. 
 # Para evidenciar la discontinuidad de la pendiente, voy a necesitar una resolucion lo suficientemente fina que me permita verlo 
 
+#%% Identidad de parseval
+# A cada una de las senoidales le pusimos amplitud = raiz de 2 --> eso hace que la potencia este normalizada, es decir que sea unitaria.
+# Entonces verifico la identidad de Parseval en cada caso 
+
+print("Identidad de Parseval\n")
+
+#%% FRECUENCIA N/4 
+vmax = np.sqrt(2)
+dc = 0
+x = dc + vmax * np.sin(2*np.pi*f0*tt)
+
+# Calculo la varianza
+varianza_x = np.var(x)
+
+# Caluclo la FFT
+X = np.fft.fft(x) / N
+
+modulo_X = np.abs(X)**2
+# Parseval --> ambas energias tienen que ser iguales
+E_t = np.sum(np.abs(x)**2) # Energia en el tiempo
+E_f = (1/N) * np.sum(modulo_X) # Energia en frecuencia
+diferencia = np.abs(E_t - E_f) # Tiene que dar cero, o muy cercano a cero
+
+print("------ Senoidal con frecuencia = N/4 ------")
+print(f"Varianza = {varianza_x:.3f}")
+print("Parseval...")
+print(f"Enetgía en tiempo: {E_t:.3f}")
+print(f"Enetgía en frecuencia: {E_f:.3f}")
+print(f"Diferencia: {diferencia:.3f}")
+
+#%% FRECUENCIA N/4 + 0.5 
+# Calculo la varianza
+varianza_x1 = np.var(x1)
+
+# Caluclo la FFT
+X1 = np.fft.fft(x1) / N
+
+modulo_X1 = np.abs(X1)**2
+# Parseval --> ambas energias tienen que ser iguales
+E_t1 = np.sum(np.abs(x1)**2) # Energia en el tiempo
+E_f1 = (1/N) * np.sum(modulo_X1) # Energia en frecuencia
+diferencia1 = np.abs(E_t1 - E_f1) # Tiene que dar cero, o muy cercano a cero
+
+print("\n------ Senoidal con frecuencia = N/4 + 0.5 ------")
+print(f"Varianza = {varianza_x1:.3f}")
+print("Parseval...")
+print(f"Enetgía en tiempo: {E_t1:.3f}")
+print(f"Enetgía en frecuencia: {E_f1:.3f}")
+print(f"Diferencia: {diferencia1:.3f}")
+
+#%% FRECUENCIA N/4 + 1
+# Calculo la varianza
+varianza_x2 = np.var(x2)
+
+# Caluclo la FFT
+X2 = np.fft.fft(x2) / N
+
+modulo_X2 = np.abs(X2)**2
+# Parseval --> ambas energias tienen que ser iguales
+E_t2 = np.sum(np.abs(x2)**2) # Energia en el tiempo
+E_f2 = (1/N) * np.sum(modulo_X2) # Energia en frecuencia
+diferencia2 = np.abs(E_t2 - E_f2) # Tiene que dar cero, o muy cercano a cero
+
+print("\n------ Senoidal con frecuencia = N/4 + 1 ------")
+print(f"Varianza = {varianza_x2:.3f}")
+print("Parseval...")
+print(f"Enetgía en tiempo: {E_t2:.3f}")
+print(f"Enetgía en frecuencia: {E_f2:.3f}")
+print(f"Diferencia: {diferencia2:.3f}")
+
+
+
+
+
 
 
