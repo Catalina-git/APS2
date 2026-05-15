@@ -10,15 +10,6 @@ df = fs / N
 Ts = 1 / fs
 a0 = np.sqrt(2) # amplitud
 omega0 = N/4
-
-#%% SNR = 10dB
-SNR = 10 # en dB
-Ps = a0**2 / 2
-Pr = Ps / (10**(SNR/10))
-desvio = np.sqrt(Pr)
-
-na = np.random.normal(0, desvio, size = (R, N)) # ruido
-
 fr = np.random.uniform(-2,2, size = R)
 
 # Eje de muestras
@@ -35,18 +26,24 @@ ff = np.arange(N) # Vector en frecuencia al escalar las muestras por la resoluci
 f = omega1*n
 ff = ff.reshape(1000, 1)
 
-# Matriz de 200 x 1000 (R x N)
-matriz = f * tt
+
+#%% SNR = 10dB
+SNR = 10 # en dB
+Ps = a0**2 / 2
+Pr = Ps / (10**(SNR/10))
+desvio = np.sqrt(Pr)
+
+na = np.random.normal(0, desvio, size = (R, N)) # ruido
 
 # Señal
-s_mat = a0 * np.sin(2*np.pi*f*Ts) + na
+s_mat_10 = a0 * np.sin(2 * np.pi * f * Ts) + na
 
 # Traspongo la señal para poder graficarla 
-señal_t = np.transpose(s_mat)
+señal_t10 = np.transpose(s_mat_10)
 
 plt.figure()
 plt.title("Senoidal + ruido (SNR = 10dB)")
-plt.plot(t, señal_t)
+plt.plot(t, señal_t10)
 plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('PSD [dB]') # Es la densidad espectral de potencia 
 plt.grid()
@@ -54,14 +51,14 @@ plt.show()
 
 # FFT
 eps = 1e-12
-S_mat = np.fft.fft(s_mat, axis = 1) / N
-S_mat_modulo = np.abs(S_mat)
-S_mat_dB = 10 * np.log10(2*(S_mat_modulo)**2 + eps)
-S_mat_dB = np.transpose(S_mat_dB)
+S_mat_10 = np.fft.fft(s_mat_10, axis = 1) / N
+S_mat_modulo10 = np.abs(S_mat_10)
+S_mat_dB10 = 10 * np.log10(2*(S_mat_modulo10)**2 + eps)
+S_mat_dB10 = np.transpose(S_mat_dB10)
 
 plt.figure()
 plt.title("FFT senoidal + ruido (SNR = 10dB)")
-plt.plot(ff, S_mat_dB)
+plt.plot(ff, S_mat_dB10)
 plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('PSD [dB]') # Es la densidad espectral de potencia 
 plt.xlim(0, fs/2)
@@ -69,17 +66,6 @@ plt.grid()
 plt.show()
 
 #%% Ventaneo SNR = 10dB 
-SNR = 10
-Ps = a0**2 / 2
-Pr = Ps / (10**(SNR/10))
-desvio = np.sqrt(Pr)
-
-na = np.random.normal(0, desvio, size=(R, N))
-
-s_mat_10 = a0 * np.sin(2 * np.pi * f * Ts) + na  # (R, N)
-
-eps = 1e-12
-
 # RECTANGULAR
 s_vent_R10 = s_mat_10 * windows.boxcar(N)
 
@@ -186,6 +172,68 @@ varianza_frec_F10 = np.var(estimador_f_F10)
 varianza_frec_B10 = np.var(estimador_f_B10)
 varianza_frec_H10 = np.var(estimador_f_H10)
 
+#%% Efecto del zero padding en el estimador de frecuencia (SNR = 10dB)
+N_zp = 2 * N  # 2000 puntos
+
+# Rectangular
+zp_W_R10 = np.fft.fft(s_vent_R10, n = N_zp, axis = 1)
+estimador_f_zp_R10 = np.argmax(np.abs(zp_W_R10[:, :N_zp//2]), axis = 1) / 2
+# Dividir por 2 porque los bins ahora son la mitad de anchos
+
+# Flattop
+zp_W_F10 = np.fft.fft(s_vent_F10, n = N_zp, axis  =1)
+estimador_f_zp_F10 = np.argmax(np.abs(zp_W_F10[:, :N_zp//2]), axis = 1) / 2
+
+# Blackmanharris
+zp_W_B10 = np.fft.fft(s_vent_B10, n = N_zp, axis = 1)
+estimador_f_zp_B10 = np.argmax(np.abs(zp_W_B10[:, :N_zp//2]), axis = 1) / 2
+
+# Hamming
+zp_W_H10 = np.fft.fft(s_vent_H10, n = N_zp, axis = 1)
+estimador_f_zp_H10 = np.argmax(np.abs(zp_W_H10[:, :N_zp//2]), axis = 1) / 2
+
+# Sesgo y varianza CON zero padding
+sesgo_f_zp_R10 = np.mean(estimador_f_zp_R10) - np.mean(omega1)
+sesgo_f_zp_F10 = np.mean(estimador_f_zp_F10) - np.mean(omega1)
+sesgo_f_zp_B10 = np.mean(estimador_f_zp_B10) - np.mean(omega1)
+sesgo_f_zp_H10 = np.mean(estimador_f_zp_H10) - np.mean(omega1)
+
+var_f_zp_R10 = np.var(estimador_f_zp_R10)
+var_f_zp_F10 = np.var(estimador_f_zp_F10)
+var_f_zp_B10 = np.var(estimador_f_zp_B10)
+var_f_zp_H10 = np.var(estimador_f_zp_H10)
+
+#%% Histograma comparativo ZP vs sin ZP
+plt.figure(figsize=(12, 5))
+plt.suptitle("Zero Padding: efecto en estimador de frecuencia (SNR = 10dB)")
+
+plt.subplot(1, 2, 1)
+plt.title("SIN zero padding")
+plt.hist(estimador_f_R10, label = 'Rectangular', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_F10,  label = 'Flattop', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_B10,  label = 'Blackmanharris', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_H10,  label = 'Hamming', alpha = 0.4, bins = 15)
+plt.axvline(np.mean(omega1), color = 'k', linestyle = '--', label = 'Ω1 verdadera')
+plt.xlabel('Bin de frecuencia')
+plt.ylabel('Ocurrencias')
+plt.legend()
+plt.grid()
+
+plt.subplot(1, 2, 2)
+plt.title("CON zero padding")
+plt.hist(estimador_f_zp_R10,      label = 'Rectangular', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_zp_F10,     label='Flattop', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_zp_B10, label='Blackmanharris', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_zp_H10,      label='Hamming',        alpha = 0.4, bins = 15)
+plt.axvline(np.mean(omega1), color = 'k', linestyle = '--', label = 'Ω1 verdadera')
+plt.xlabel('Bin de frecuencia')
+plt.ylabel('Ocurrencias')
+plt.legend()
+plt.grid()
+
+plt.tight_layout()
+plt.show()
+
 #%% SNR = 3dB
 SNR = 3 # en dB
 Ps = a0**2 / 2
@@ -195,14 +243,14 @@ desvio = np.sqrt(Pr)
 na = np.random.normal(0, desvio, size = (R, N)) # ruido
 
 # Señal
-s_mat1 = a0 * np.sin(2*np.pi*f*Ts) + na 
+s_mat_3 = a0 * np.sin(2 * np.pi * f * Ts) + na 
 
 # Traspongo la señal para poder graficarla 
-señal_t1 = np.transpose(s_mat1)
+señal_t3 = np.transpose(s_mat_3)
 
 plt.figure()
 plt.title("Senoidal + ruido (SNR = 3dB)")
-plt.plot(t, señal_t1)
+plt.plot(t, señal_t3)
 plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('PSD [dB]') # Es la densidad espectral de potencia 
 plt.grid()
@@ -210,31 +258,20 @@ plt.show()
 
 # FFT
 eps = 1e-12
-S_mat1 = np.fft.fft(s_mat1, axis = 1) / N
-S_mat_modulo1 = np.abs(S_mat1)
-S_mat_dB1 = 10 * np.log10(2*(S_mat_modulo1)**2 + eps)
-S_mat_dB1 = np.transpose(S_mat_dB1)
+S_mat_3 = np.fft.fft(s_mat_3, axis = 1) / N
+S_mat_modulo3 = np.abs(S_mat_3)
+S_mat_dB3 = 10 * np.log10(2*(S_mat_modulo3)**2 + eps)
+S_mat_dB3 = np.transpose(S_mat_dB3)
 
 plt.figure()
 plt.title("FFT senoidal + ruido (SNR = 3dB)")
-plt.plot(ff, S_mat_dB1)
+plt.plot(ff, S_mat_dB3)
 plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('PSD [dB]') # Es la densidad espectral de potencia 
 plt.xlim(0, fs/2)
 plt.grid()
 plt.show()
 #%% Ventaneo SNR = 3dB
-SNR = 3
-Ps = a0**2 / 2
-Pr = Ps / (10**(SNR/10))
-desvio = np.sqrt(Pr)
-
-na = np.random.normal(0, desvio, size=(R, N))
-
-s_mat_3 = a0 * np.sin(2 * np.pi * f * Ts) + na  # (R, N)
-
-eps = 1e-12
-
 # RECTANGULAR
 s_vent_R3 = s_mat_3 * windows.boxcar(N)
 
@@ -307,7 +344,6 @@ plt.tight_layout()
 plt.show()
 
 #%% Estimador de amplitud SNR = 3dB
-# SNR = 3dB
 estimador_a_R3 = np.abs(S_vent_R3[:, N//4])*2
 estimador_a_F3 = np.abs(S_vent_F3[:, N//4])*2
 estimador_a_B3 = np.abs(S_vent_B3[:, N//4])*2
@@ -330,6 +366,79 @@ estimador_f_F3 = np.argmax(np.abs(S_vent_F3[:, :N//2]), axis=1)
 estimador_f_B3 = np.argmax(np.abs(S_vent_B3[:, :N//2]), axis=1)
 estimador_f_H3 = np.argmax(np.abs(S_vent_H3[:, :N//2]), axis=1)
 
+#%% SESGO Y VARIANZA SNR = 3dB
+sesgo_frec_R3 = np.mean(estimador_f_R3) - np.mean(omega1)
+sesgo_frec_F3 = np.mean(estimador_f_F3) - np.mean(omega1)
+sesgo_frec_B3 = np.mean(estimador_f_B3) - np.mean(omega1)
+sesgo_frec_H3 = np.mean(estimador_f_H3) - np.mean(omega1)
+
+varianza_frec_R3 = np.var(estimador_f_R3)
+varianza_frec_F3 = np.var(estimador_f_F3)
+varianza_frec_B3 = np.var(estimador_f_B3)
+varianza_frec_H3 = np.var(estimador_f_H3)
+
+#%% Efecto del zero padding en el estimador de frecuencia (SNR = 3dB)
+N_zp = 2 * N  # 2000 puntos
+
+# Rectangular
+zp_W_R3 = np.fft.fft(s_vent_R3, n = N_zp, axis = 1)
+estimador_f_zp_R3 = np.argmax(np.abs(zp_W_R3[:, :N_zp//2]), axis = 1) / 2
+# Dividir por 2 porque los bins ahora son la mitad de anchos
+
+# Flattop
+zp_W_F3 = np.fft.fft(s_vent_F3, n = N_zp, axis  =1)
+estimador_f_zp_F3 = np.argmax(np.abs(zp_W_F3[:, :N_zp//2]), axis = 1) / 2
+
+# Blackmanharris
+zp_W_B3 = np.fft.fft(s_vent_B3, n = N_zp, axis = 1)
+estimador_f_zp_B3 = np.argmax(np.abs(zp_W_B3[:, :N_zp//2]), axis = 1) / 2
+
+# Hamming
+zp_W_H3 = np.fft.fft(s_vent_H3, n = N_zp, axis = 1)
+estimador_f_zp_H3 = np.argmax(np.abs(zp_W_H3[:, :N_zp//2]), axis = 1) / 2
+
+# Sesgo y varianza CON zero padding
+sesgo_f_zp_R3 = np.mean(estimador_f_zp_R3) - np.mean(omega1)
+sesgo_f_zp_F3 = np.mean(estimador_f_zp_F3) - np.mean(omega1)
+sesgo_f_zp_B3 = np.mean(estimador_f_zp_B3) - np.mean(omega1)
+sesgo_f_zp_H3 = np.mean(estimador_f_zp_H3) - np.mean(omega1)
+
+var_f_zp_R3 = np.var(estimador_f_zp_R3)
+var_f_zp_F3 = np.var(estimador_f_zp_F3)
+var_f_zp_B3 = np.var(estimador_f_zp_B3)
+var_f_zp_H3 = np.var(estimador_f_zp_H3)
+
+#%% Histograma comparativo ZP vs sin ZP
+plt.figure(figsize=(12, 5))
+plt.suptitle("Zero Padding: efecto en estimador de frecuencia (SNR = 3dB)")
+
+plt.subplot(1, 2, 1)
+plt.title("SIN zero padding")
+plt.hist(estimador_f_R3, label = 'Rectangular', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_F3,  label = 'Flattop', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_B3,  label = 'Blackmanharris', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_H3,  label = 'Hamming', alpha = 0.4, bins = 15)
+plt.axvline(np.mean(omega1), color = 'k', linestyle = '--', label = 'Ω1 verdadera')
+plt.xlabel('Bin de frecuencia')
+plt.ylabel('Ocurrencias')
+plt.legend()
+plt.grid()
+
+plt.subplot(1, 2, 2)
+plt.title("CON zero padding")
+plt.hist(estimador_f_zp_R3, label = 'Rectangular', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_zp_F3, label='Flattop', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_zp_B3, label='Blackmanharris', alpha = 0.4, bins = 15)
+plt.hist(estimador_f_zp_H3 , label='Hamming', alpha = 0.4, bins = 15)
+plt.axvline(np.mean(omega1), color = 'k', linestyle = '--', label = 'Ω1 verdadera')
+plt.xlabel('Bin de frecuencia')
+plt.ylabel('Ocurrencias')
+plt.legend()
+plt.grid()
+
+plt.tight_layout()
+plt.show()
+
 #%% Observaciones 
 # Toda ventana tiene un compromiso (trade - off) entre dos caracteristicas: 
 # - Resolucion espectral --> que tan angosto es el lobulo principal (pico)
@@ -351,6 +460,7 @@ plt.hist(estimador_a_R10, label = 'Rectangular', alpha = trans, bins = bins)
 plt.hist(estimador_a_F10,label = 'Flattop', alpha = trans, bins = bins)
 plt.hist(estimador_a_B10,label = 'Blackmanharris', alpha = trans, bins = bins)
 plt.hist(estimador_a_H10,label = 'Hamming', alpha = trans, bins = bins)
+plt.axvline(a0, color = 'k', linestyle = '--', label = 'a\u2080 verdadera')
 plt.ylabel('#Cantidad de ocurrencias')
 plt.legend()
 plt.grid()
@@ -361,6 +471,7 @@ plt.hist(estimador_a_R3, label = 'Rectangular', alpha = trans, bins = bins)
 plt.hist(estimador_a_F3,label = 'Flattop', alpha = trans, bins = bins)
 plt.hist(estimador_a_B3,label = 'Blackmanharris', alpha = trans, bins = bins)
 plt.hist(estimador_a_H3,label = 'Hamming', alpha = trans, bins = bins)
+plt.axvline(a0, color = 'k', linestyle = '--', label = 'a\u2080 verdadera')
 plt.ylabel('#Cantidad de ocurrencias')
 plt.legend()
 plt.grid()
@@ -378,6 +489,7 @@ plt.hist(estimador_f_R10, label = 'Rectangular',    alpha = trans, bins = 10)
 plt.hist(estimador_f_F10, label = 'Flattop',        alpha = trans, bins = 10)
 plt.hist(estimador_f_B10, label = 'Blackmanharris', alpha = trans, bins = 10)
 plt.hist(estimador_f_H10, label = 'Hamming',        alpha = trans, bins = 10)
+plt.axvline(np.mean(omega1), color = 'k', linestyle = '--', label = 'Ω1 verdadera')
 # plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('# Cantidad de ocurrencias')
 plt.legend()
@@ -389,6 +501,7 @@ plt.hist(estimador_f_R3, label = 'Rectangular',    alpha = trans, bins = 10)
 plt.hist(estimador_f_F3, label = 'Flattop',        alpha = trans, bins = 10)
 plt.hist(estimador_f_B3, label = 'Blackmanharris', alpha = trans, bins = 10)
 plt.hist(estimador_f_H3, label = 'Hamming',        alpha = trans, bins = 10)
+plt.axvline(np.mean(omega1), color = 'k', linestyle = '--', label = 'Ω1 verdadera')
 # plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('# Cantidad de ocurrencias')
 plt.legend()
@@ -397,28 +510,8 @@ plt.grid()
 plt.tight_layout()
 plt.show()
 
-#%% Efecto del zero padding en el estimador de frecuencia
-
-# Rectangular
-zp_W_rec = np.fft.fft(s_vent_R10, n = 2000, axis = 1)
-estimador_f_zp_rec = np.argmax(np.abs(zp_W_rec[:, :N//2]), axis=1)
-
-
-# Flattop
-zp_W_flat = np.fft.fft(s_vent_F10, n = 2000, axis = 1)
-estimador_f_zp_flat = np.argmax(np.abs(zp_W_flat[:, :N//2]), axis=1)
-
-
-
-# Blackmanharris
-zp_W_blackman = np.fft.fft(s_vent_B10, n = 2000, axis = 1)
-estimador_f_zp_blackman = np.argmax(np.abs(zp_W_blackman[:, :N//2]), axis=1)
-
-
-# Hamming
-zp_W_ham = np.fft.fft(s_vent_H10, n = 2000, axis = 1)
-estimador_f_zp_rec = np.argmax(np.abs(zp_W_rec[:, :N//2]), axis=1)
-
+#%% Efecto del zero padding en el estimador de frecuencia (SNR = 10dB)
+N_zp = 2 * N  # 2000 puntos
 #%% CONCLUSIONES
 # El estimador de energia es muy deoendiente de la ventana
 # Para todo lo que sea energia, el desparramo de la misma depende de la energia
