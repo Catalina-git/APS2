@@ -430,6 +430,3 @@ estimador_f_zp_rec = np.argmax(np.abs(zp_W_rec[:, :N//2]), axis=1)
 # El zp se lleva puesto eso 
 # na es un proceso gaussiano incorrelado, cuando promediamos eso tiende a cero
 # Da lo mismo promediar en las realizaciones que en el tiempo (valor nulo) --> ergodicidad
-
-
-#%% BONU
