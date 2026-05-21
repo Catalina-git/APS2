@@ -21,6 +21,8 @@ ecg_one_lead = np.load('ecg_sin_ruido.npy')
 N_ECG = len(ecg_one_lead)
 nn_ECG = np.arange(N_ECG)
 
+# N = 1000
+
 plt.figure()
 plt.plot(nn_ECG, ecg_one_lead)
 plt.title("ECG sin ruido")
@@ -29,7 +31,7 @@ fs_ecg = 1000 # Hz
 cant_promedio = 10
 nperseg = ecg_one_lead.shape[0] // cant_promedio
 
-f, Pxx = sig.welch(ecg_one_lead, fs = fs_ecg, window ='hamming', nperseg = nperseg, noverlap = 5)
+f, Pxx = sig.welch(ecg_one_lead, fs = fs_ecg, window ='hamming', nperseg = nperseg, noverlap = 10)
 
 plt.figure()
 plt.title("WELCH - ECG")
@@ -41,6 +43,7 @@ plt.xlim(-1, 45)
 ppg = np.load('ppg_sin_ruido.npy')
 
 plt.figure()
+plt.title("PPG")
 plt.plot(ppg)
 
 fs_ppg = 400 # Hz
@@ -57,7 +60,7 @@ plt.xlim(-1, 45)
 fs_audio1, wav_data1 = sio.wavfile.read('la cucaracha.wav')
 
 plt.figure()
-plt.title("Sonido de la cucaracha")
+plt.title("Audio de la cucaracha")
 plt.plot(wav_data1)
 
 cant_promedio_sonido = 100 
