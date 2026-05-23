@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from scipy import signal as sig
 
 import scipy.io as sio
-from scipy.io.wavfile import write
 
 # Crece la energia --> crece la varianza
 # La flattop no es una ventana util para hacer estimacion espectral, porque tiene el lobulo principal muy ancho 
@@ -26,13 +25,14 @@ nn_ECG = np.arange(N_ECG)
 plt.figure()
 plt.plot(nn_ECG, ecg_one_lead)
 plt.title("ECG sin ruido")
+plt.grid()
 plt.show()
 
 # WELCH
 cant_promedios_ecg = 10
 nperseg = N_ECG // cant_promedios_ecg
 
-f_ecg, Pxx_ecg = sig.welch(ecg_one_lead, fs = fs_ecg, window ='hann', nperseg = nperseg, noverlap = 10)
+f_ecg, Pxx_ecg = sig.welch(ecg_one_lead, fs = fs_ecg, window ='hamming', nperseg = nperseg, noverlap = 10)
 
 plt.figure()
 plt.title("WELCH - ECG")
@@ -68,7 +68,7 @@ f_inf_ecg = f_ecg[idx_inf_ecg]
 f_sup_ecg = f_ecg[idx_sup_ecg]
 BW_ecg = f_sup_ecg - f_inf_ecg
 
-print(f"Ancho de bandadel ECG: BW = {BW_ecg:.1f} Hz")
+# print(f"Ancho de banda del ECG (Welch): Bandwidth = {BW_ecg:.1f} Hz")
 
 #%% PPG SIN RUIDO
 # Pasa bajos 
@@ -80,11 +80,21 @@ N_PPG = len(ppg)
 plt.figure()
 plt.title("PPG")
 plt.plot(ppg)
+plt.grid()
+plt.show()
 
 cant_promedios_ppg = 10
 nperseg_ppg = N_PPG // cant_promedios_ppg
 
-f_ppg, Pxx_ppg = sig.welch(ppg, fs = fs_ppg, window ='hann', nperseg = nperseg_ppg)
+f_ppg, Pxx_ppg = sig.welch(ppg, fs = fs_ppg, window ='hamming', nperseg = nperseg_ppg)
+
+plt.figure()
+plt.title("WELCH - PPG")
+plt.plot(f_ppg, Pxx_ppg)
+plt.xlim(-1, 45)
+plt.xlabel('Frecuencia [Hz]')
+plt.grid()
+plt.show()
 
 # # Zero padding 
 # nfft_ppg = 10 * nperseg_ppg
@@ -111,7 +121,7 @@ f_inf_ppg = f_ppg[idx_inf_ppg]
 f_sup_ppg = f_ppg[idx_sup_ppg]
 BW_ppg = f_sup_ppg - f_inf_ppg
 
-print(f"Ancho de banda del PPG: BW = {BW_ppg:.1f} Hz")
+# print(f"Ancho de banda del PPG (Welch): Bandwidth = {BW_ppg:.1f} Hz")
 
 #%% AUDIO 
 # Pasa banda
@@ -123,11 +133,21 @@ N_audio = len(wav_data)
 plt.figure()
 plt.title("Audio de la cucaracha")
 plt.plot(wav_data)
+plt.grid()
+plt.show()
 
 cant_promedio_audio = 10 
 nperseg_audio = N_audio // cant_promedio_audio
 
 f_audio, Pxx_audio = sig.welch(wav_data, fs = fs_audio, window ='hamming', nperseg = nperseg_audio)
+
+plt.figure()
+plt.title("WELCH - AUDIO")
+plt.plot(f_audio, Pxx_audio)
+plt.xlim(-1, 2500)
+plt.xlabel('Frecuencia [Hz]')
+plt.grid()
+plt.show()
 
 # # Zero padding 
 # nfft_audio = 4 * nperseg_audio
@@ -154,7 +174,7 @@ f_inf_audio = f_audio[idx_inf_audio]
 f_sup_audio = f_audio[idx_sup_audio]
 BW_audio = f_sup_audio - f_inf_audio
 
-print(f"Ancho de banda del audio de la cucaracha:  BW = {BW_audio:.1f} Hz")
+# print(f"Ancho de banda del Audio (Welch):  Bandwidth = {BW_audio:.1f} Hz")
 
 
 #%% Para estimar el ancho de banda
@@ -247,27 +267,68 @@ plt.legend()
 plt.grid()
 plt.show()
  
-#%% ANALISIS DE SESGO Y VARIANZA (sin realizaciones)
+#%% Ancho de banda con Blackman-Tukey
+
+# ECG (pasa-bajos -> un corte)
+df = f_ecg_bt[1] - f_ecg_bt[0]
+acum = np.cumsum(Px_ecg_bt) * df
+acum_norm = acum / acum[-1]
+idx = np.where(acum_norm >= 0.99)[0][0]
+BW_ecg_bt = f_ecg_bt[idx]
+# print(f"Ancho de banda del ECG (Blackman-Tukey): Bandwidth = {BW_ecg_bt:.1f} Hz")
+
+# PPG (pasa-bajos -> un corte)
+df = f_ppg_bt[1] - f_ppg_bt[0]
+acum = np.cumsum(Px_ppg_bt) * df
+acum_norm = acum / acum[-1]
+idx = np.where(acum_norm >= 0.99)[0][0]
+BW_ppg_bt = f_ppg_bt[idx]
+# print(f"Ancho de banda del PPG (Blackman-Tukey): Bandwidth = {BW_ppg_bt:.1f} Hz")
+
+# AUDIO cucaracha (pasa-banda -> dos cortes)
+df = f_audio_bt[1] - f_audio_bt[0]
+acum = np.cumsum(Px_audio_bt) * df
+acum_norm = acum / acum[-1]
+idx_inf = np.where(acum_norm >= 0.005)[0][0]
+idx_sup = np.where(acum_norm >= 0.995)[0][0]
+BW_audio_bt = f_audio_bt[idx_sup] - f_audio_bt[idx_inf]
+# print(f"Ancho de banda del Audio (Blackman-Tukey): Bandwidth = {BW_audio_bt:.1f} Hz")
+
+#%% Comparacion de anchos de banda 
+print("\nANCHO DE BANDA: Welch vs Blackman-Tukey\n")
+
+print(f"{'Senal':<12}{'Welch [Hz]':<15}{'Blackman-Tukey [Hz]':<20}")
+print("-" * 47)
+print(f"{'ECG':<12}{BW_ecg:<15.1f}{BW_ecg_bt:<20.1f}")
+print(f"{'PPG':<12}{BW_ppg:<15.1f}{BW_ppg_bt:<20.1f}")
+print(f"{'Audio':<12}{BW_audio:<15.1f}{BW_audio_bt:<20.1f}")
+
+#%% ANALISIS DE LA VARIANZA 
 # Varianza teorica del estimador de Welch:  Var[P(f)] ~ P(f)^2 / K
 #   K = cantidad de segmentos promediados (cant_promedio)
 #   -> a mayor K, menor varianza (estimador mas suave)
 # El sesgo se ve cualitativamente como el ensanchamiento de los picos
 # al achicar los segmentos (peor resolucion espectral).
  
-
-print("\nANALISIS DE SESGO Y VARIANZA\n")
- 
 var_ecg_W = (Pxx_ecg ** 2 / cant_promedios_ecg).mean()
 var_ppg_W = (Pxx_ppg ** 2 / cant_promedios_ppg).mean()
-var_aud_W = (Pxx_audio ** 2 / cant_promedio_audio).mean()
+var_audio_W = (Pxx_audio ** 2 / cant_promedio_audio).mean()
 
-# Blackman-Tukey (uso el mismo M que pasaste a la funcion)
-var_ecg_bt   = var_blackman_tukey(Px_ecg_bt,   N_ECG,   N_ECG // 20)
-var_ppg_bt   = var_blackman_tukey(Px_ppg_bt,   N_PPG,   N_PPG // 20)
-var_audio_bt = var_blackman_tukey(Px_audio_bt, N_audio, N_audio // 100)
+# Energia de la ventana Blackman de cada senal (Ew = sum(w^2))
+Ew_ecg   = np.sum(sig.windows.blackman(2 * (N_ECG // 20) - 1) ** 2)
+Ew_ppg   = np.sum(sig.windows.blackman(2 * (N_PPG // 20) - 1) ** 2)
+Ew_audio = np.sum(sig.windows.blackman(2 * (N_audio // 100) - 1) ** 2)
+
+# Varianza Blackman-Tukey:  Var[P(f)] ~ P(f)^2 * Ew / N
+var_ecg_BT = (Px_ecg_bt ** 2 * Ew_ecg / N_ECG).mean()
+var_ppg_BT = (Px_ppg_bt ** 2 * Ew_ppg / N_PPG).mean()
+var_audio_BT = (Px_audio_bt ** 2 * Ew_audio / N_audio).mean()
+
  
-print("\nVARIANZA DEL ESTIMADOR: Welch vs Blackman-Tukey\n")
-print(f"{'Senal':<12}{'Var Welch':<18}{'Var Blackman-Tukey':<20}")
-print(f"{'ECG':<12}{var_ecg_W:<18.3e}{var_ecg_bt:<20.3e}")
-print(f"{'PPG':<12}{var_ppg_W:<18.3e}{var_ppg_bt:<20.3e}")
-print(f"{'Audio':<12}{var_audio_W:<18.3e}{var_audio_bt:<20.3e}")
+print("\n\nANALISIS DE VARIANZA: Welch vs Blackman-Tukey\n")
+
+print(f"{'Senal':<12}{'Welch [Hz]':<18}{'Blackman-Tukey [Hz]':<20}")
+print("-" * 50)
+print(f"{'ECG':<12}{var_ecg_W:<18.3e}{var_ecg_BT:<20.3e}")
+print(f"{'PPG':<12}{var_ppg_W:<18.3e}{var_ppg_BT:<20.3e}")
+print(f"{'Audio':<12}{var_audio_W:<18.3e}{var_audio_BT:<20.3e}")
