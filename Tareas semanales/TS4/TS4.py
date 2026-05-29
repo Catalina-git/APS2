@@ -512,8 +512,9 @@ plt.show()
 
 #%% Efecto del zero padding en el estimador de frecuencia (SNR = 10dB)
 N_zp = 2 * N  # 2000 puntos
+
 #%% CONCLUSIONES
-# El estimador de energia es muy deoendiente de la ventana
+# El estimador de energia es muy dependiente de la ventana
 # Para todo lo que sea energia, el desparramo de la misma depende de la energia
 # En contraposicion, el estimador de la frecuencia no depende de la energia --> forma concava
 # Zero padding --> va a bajar la varianza porque estoy midiendo en mas puntos intermedios
