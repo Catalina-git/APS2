@@ -15,7 +15,7 @@ omega, resp_freq = sig.freqz(b_coeff, a = a_coeff, worN = 1024)
 
 fig, axs = plt.subplots(nrows = 2, ncols = 1, sharex = True, tight_layout = True)
 ax1, ax2 = axs
-ax1.set_title(f"Frequency Response of {taps} tap IIR Filter") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
+ax1.set_title(f"Frequency Response of {taps} tap FIR Filter") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
 ax1.plot(omega, abs(resp_freq), 'C0')
 # ax1.plot(omega, abs(resp_freq), 'C0')
 ax1.set_ylabel("Amplitude in dB", color = 'C0')
@@ -46,7 +46,7 @@ omega, resp_freq = sig.freqz(b_coeff, a = a_coeff, worN = 1024)
 
 fig, axs = plt.subplots(nrows = 2, ncols = 1, sharex = True, tight_layout = True)
 ax1, ax2 = axs
-ax1.set_title(f"Frequency Response of {taps} tap IIR Filter") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
+ax1.set_title(f"Frequency Response of {taps} tap FIR Filter") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
 ax1.plot(omega, abs(resp_freq), 'C0')
 # ax1.plot(omega, abs(resp_freq), 'C0')
 ax1.set_ylabel("Amplitude in dB", color = 'C0')
@@ -77,7 +77,7 @@ omega, resp_freq = sig.freqz(b_coeff, a = a_coeff, worN = 1024)
 
 fig, axs = plt.subplots(nrows = 2, ncols = 1, sharex = True, tight_layout = True)
 ax1, ax2 = axs
-ax1.set_title(f"Frequency Response of {taps} tap IIR Filter") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
+ax1.set_title(f"Frequency Response of {taps} tap FIR Filter") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
 ax1.plot(omega, abs(resp_freq), 'C0')
 # ax1.plot(omega, abs(resp_freq), 'C0')
 ax1.set_ylabel("Amplitude in dB", color = 'C0')
@@ -108,7 +108,7 @@ omega, resp_freq = sig.freqz(b_coeff, a = a_coeff, worN = 1024)
 
 fig, axs = plt.subplots(nrows = 2, ncols = 1, sharex = True, tight_layout = True)
 ax1, ax2 = axs
-ax1.set_title(f"Frequency Response of {taps} tap IIR Filter") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
+ax1.set_title(f"Frequency Response of {taps} tap FIR Filter") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
 ax1.plot(omega, abs(resp_freq), 'C0')
 # ax1.plot(omega, abs(resp_freq), 'C0')
 ax1.set_ylabel("Amplitude in dB", color = 'C0')
