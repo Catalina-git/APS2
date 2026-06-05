@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal as sig
-# from pytc2.sistemas_lineales import plot_plantilla
+from pytc2.sistemas_lineales import plot_plantilla
 import scipy.io as sio
 
 # %% 1) PLANTILLA DE DISEÑO - PASABANDA DIGITAL
@@ -132,7 +132,7 @@ plt.figure(figsize=(12,10))
 
 plt.subplot(3,1,1)
 plt.plot(w_fir, 20*np.log10(abs(h_fir)))
-# plot_plantilla('bandpass', wp, alpha_p*2, ws, alpha_s*2, fs)
+plot_plantilla('bandpass', wp, alpha_p*2, ws, alpha_s*2, fs)
 plt.title('FIR ventana rectangular - Respuesta en Magnitud')
 plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('|H(ω)| [dB]')
@@ -213,7 +213,7 @@ for r in regiones_sin_ruido:
     plt.figure(figsize=(10,4))
     plt.plot(t, ecg_raw[t], label="ECG")
     plt.plot(t, ecg_filt_iir[t], label="Butterworth")
-    # plt.plot(t, ecg_filt_fir[t], label="FIR")
+    plt.plot(t, ecg_filt_fir[t], label="FIR")
     plt.title('ECG sin ruido desde' + str(r[0]) + ' hasta ' + str(r[1]) )
     plt.ylabel('Adimensional')
     plt.xlabel('Muestras (#)')
@@ -235,7 +235,7 @@ for r in regiones_ruidosas:
     plt.figure(figsize=(10,4))
     plt.plot(t, ecg_raw[t], label="ECG")
     plt.plot(t, ecg_filt_iir[t], label="Butterworth")
-    # plt.plot(t, ecg_filt_fir[t], label="FIR")
+    plt.plot(t, ecg_filt_fir[t], label="FIR")
     plt.title('ECG con ruido desde ' + str(r[0]) + ' hasta ' + str(r[1]) )
     plt.ylabel('Adimensional')
     plt.xlabel('Muestras (#)')

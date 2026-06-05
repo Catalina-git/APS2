@@ -29,8 +29,7 @@ ws = [ws1, ws2] # Comienzo y fin de la banda de stop
 # ftype = 'cheby2'
 # ftype = 'cauer'
 
-sos_f_butter = sig.iirdesign(wp, ws, gpass, gstop, analog = False, ftype = 'butter', output = 'sos', fs = fs)
-# Es de maxima planicidad en ambas bandas 
+sos_f_butter = sig.iirdesign(wp, ws, gpass, gstop, analog = False, ftype = 'butter', output = 'sos', fs = fs) # Es de maxima planicidad en ambas bandas 
 sos_f_cauer = sig.iirdesign(wp, ws, gpass, gstop, analog = False, ftype = 'cauer', output = 'sos', fs = fs)
 sos_f_cheby2 = sig.iirdesign(wp, ws, gpass, gstop, analog = False, ftype = 'cheby2', output = 'sos', fs = fs)
 
@@ -120,14 +119,17 @@ ecg_one_lead = mat_struct['ecg_lead']. flatten()
 # Usamos la funcion de scipy.signal --> sosfilt --> va a tener limitaciones 
 
 ECG_f_butter = sig.sosfilt(sos_f_butter, ecg_one_lead)
+ECG_f_cauer = sig.sosfilt(sos_f_cauer, ecg_one_lead)
+ECG_f_cheby2 = sig.sosfilt(sos_f_cheby2, ecg_one_lead)
 
 plt.figure()
 plt.plot(ecg_one_lead, label = 'ECG original con ruido')
-plt.plot(ECG_f_butter, label = 'ECG filtrado (sosfilt)')
+plt.plot(ECG_f_butter, label = 'ECG filtrado (sosfilt) - Butter')
+plt.plot(ECG_f_cauer, label = 'ECG filtrado (sosfilt) - Cauer')
+plt.plot(ECG_f_cheby2, label = 'ECG filtrado (sosfilt) - Cheby 2')
 plt.legend()
 plt.show()
 
-# Probar espectro de entrada vs espectro de salida? 
 
 #%% Vamos a usar sosfiltfilt
 # Hace un backward - fordward 
@@ -137,6 +139,8 @@ plt.show()
 # El efecto de invertir en tiempo es util para el retardo de fase? Neutraliza la fase, sincroniza temporalmente la señal original con la filtrada
 
 sos_ff_butter = sig.iirdesign(wp, ws, gpass / 2, gstop / 2, analog = False, ftype = 'butter', output = 'sos', fs = fs)
+sos_ff_cauer = sig.iirdesign(wp, ws, gpass / 2, gstop / 2, analog = False, ftype = 'cauer', output = 'sos', fs = fs)
+sos_ff_cheby2 = sig.iirdesign(wp, ws, gpass / 2, gstop / 2, analog = False, ftype = 'cheby2', output = 'sos', fs = fs)
 
 taps = sos_ff_butter.shape[0] * 2 # El por dos es porque son todos de segundo orden 
 
@@ -145,15 +149,18 @@ omega, resp_freq = sig.freqz_sos(sos_ff_butter, worN = ww, fs = fs)
 phase = np.unwrap(np.angle(resp_freq))
 
 ECG_ff_butter = sig.sosfiltfilt(sos_ff_butter, ecg_one_lead)
+ECG_ff_cauer = sig.sosfiltfilt(sos_ff_cauer, ecg_one_lead)
+ECG_ff_cheby2 = sig.sosfiltfilt(sos_ff_cheby2, ecg_one_lead)
 
 plt.figure()
 plt.plot(ecg_one_lead, label = 'ECG original con ruido')
-plt.plot(ECG_ff_butter, label = 'ECG filtrado (sosfiltfilt)')
+plt.plot(ECG_ff_butter, label = 'ECG filtrado (sosfiltfilt) - Butter')
+plt.plot(ECG_ff_cauer, label = 'ECG filtrado (sosfiltfilt) - Cauer')
+plt.plot(ECG_ff_cheby2, label = 'ECG filtrado (sosfiltfilt) - Cheby 2')
 plt.legend()
 plt.show()
 
 # Probar con todas las funciones de aproximacion 
-
 
 #%% Regiones de interés con ruido
  
@@ -170,12 +177,15 @@ for ii in regs_interes:
     # intervalo limitado de 0 a cant_muestras
     zoom_region = np.arange(np.max([0, ii[0]]), np.min([cant_muestras, ii[1]]), dtype='uint')
    
-    plt.figure(1)
-    plt.plot(zoom_region, ECG_f_butter[zoom_region], label='ECG', linewidth=2)
+    plt.figure()
+    plt.plot(zoom_region, ecg_one_lead[zoom_region], label='ECG', linewidth=2)
+    plt.plot(zoom_region, ECG_f_butter[zoom_region], label='Butter', linewidth=2)
+    plt.plot(zoom_region, ECG_f_cauer[zoom_region], label='Cauer', linewidth=2)
+    plt.plot(zoom_region, ECG_f_cheby2[zoom_region], label='Cheby 2', linewidth=2)
     #plt.plot(zoom_region, ECG_f_butt[zoom_region], label='Butterworth')
     #plt.plot(zoom_region, ECG_f_win[zoom_region + demora], label='FIR Window')
    
-    plt.title('ECG filtering example from ' + str(ii[0]) + ' to ' + str(ii[1]) )
+    plt.title('ECG with noise filtering example from ' + str(ii[0]) + ' to ' + str(ii[1]) )
     plt.ylabel('Adimensional')
     plt.xlabel('Muestras (#)')
    
@@ -198,12 +208,15 @@ for ii in regs_interes:
     # intervalo limitado de 0 a cant_muestras
     zoom_region = np.arange(np.max([0, ii[0]]), np.min([cant_muestras, ii[1]]), dtype='uint')
    
-    plt.figure(2)
-    plt.plot(zoom_region, ECG_ff_butter[zoom_region], label='ECG', linewidth=2)
+    plt.figure()
+    plt.plot(zoom_region, ecg_one_lead[zoom_region], label='ECG', linewidth=2)
+    plt.plot(zoom_region, ECG_ff_butter[zoom_region], label='Butter', linewidth=2)
+    plt.plot(zoom_region, ECG_ff_cauer[zoom_region], label='Cauer', linewidth=2)
+    plt.plot(zoom_region, ECG_ff_cheby2[zoom_region], label='Cheby 2', linewidth=2)
     # plt.plot(zoom_region, yy_2[zoom_region], label='Butterworth')
     # plt.plot(zoom_region, yy_2[zoom_region + gd], label='FIR Window')
    
-    plt.title('ECG filtering example from ' + str(ii[0]) + ' to ' + str(ii[1]) )
+    plt.title('ECG without noise filtering example from ' + str(ii[0]) + ' to ' + str(ii[1]) )
     plt.ylabel('Adimensional')
     plt.xlabel('Muestras (#)')
    

@@ -11,7 +11,7 @@ wp1 = 1 # Hz
 wp2 = 35 # Hz --> 30 es aprox el ancho de banda que nos dio en la TS5
 ws1 = .1 # Hz \
 ws2 = 45 # Hz
-gpass = 1 # dB
+gpass = 0.5 # dB
 gstop = 40 # dB 
 
 wp = [wp1, wp2] # Comienzo y fin de la banda de paso
@@ -38,7 +38,7 @@ fig, axs = plt.subplots(nrows = 2, ncols = 1, sharex = True, tight_layout = True
 ax1, ax2 = axs
 
 # Modulo
-ax1.set_title(f"Filtro Pasa-Banda IIR (SOS) + Plantilla de diseño - {taps} tap") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
+ax1.set_title(f"Filtro FIR (SOS) + Plantilla de diseño - {taps} tap") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
 ax1.plot(omega, 20 * np.log10(abs(resp_freq)), 'C0')
 ax1.set_ylabel("Amplitude in dB", color = 'C0')
 ax1.set_ylabel('Magnitud [dB]')
