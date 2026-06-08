@@ -137,12 +137,24 @@ plt.grid()
 plt.tight_layout()
 plt.show()
 
+#%% Ganancia coherente de cada ventana
+CG_R = np.mean(windows.boxcar(N))
+CG_F = np.mean(windows.flattop(N))
+CG_B = np.mean(windows.blackmanharris(N))
+CG_H = np.mean(windows.hamming(N))
+
+# Calculo el maximo espectral 
+kmax_R10 = np.argmax(np.abs(S_vent_R10[:, :N//2]), axis=1)
+kmax_F10 = np.argmax(np.abs(S_vent_F10[:, :N//2]), axis=1)
+kmax_B10 = np.argmax(np.abs(S_vent_B10[:, :N//2]), axis=1)
+kmax_H10 = np.argmax(np.abs(S_vent_H10[:, :N//2]), axis=1)
+
 #%% Estimador de amplitud SNR = 10dB
 # SNR = 10dB
-estimador_a_R10 = np.abs(S_vent_R10[:, N//4])*2
-estimador_a_F10 = np.abs(S_vent_F10[:, N//4])*2
-estimador_a_B10 = np.abs(S_vent_B10[:, N//4])*2
-estimador_a_H10 = np.abs(S_vent_H10[:, N//4])*2
+estimador_a_R10 = 2*np.abs(S_vent_R10[np.arange(R), kmax_R10])/CG_R
+estimador_a_F10 = 2*np.abs(S_vent_F10[np.arange(R), kmax_F10])/CG_F
+estimador_a_B10 = 2*np.abs(S_vent_B10[np.arange(R), kmax_B10])/CG_B
+estimador_a_H10 = 2*np.abs(S_vent_H10[np.arange(R), kmax_H10])/CG_H
 
 #%% SESGO Y VARIANZA SNR = 10dB
 sesgo_amp_R10 = np.mean(estimador_a_R10) - a0 
@@ -271,6 +283,7 @@ plt.ylabel('PSD [dB]') # Es la densidad espectral de potencia
 plt.xlim(0, fs/2)
 plt.grid()
 plt.show()
+
 #%% Ventaneo SNR = 3dB
 # RECTANGULAR
 s_vent_R3 = s_mat_3 * windows.boxcar(N)
@@ -343,11 +356,17 @@ plt.grid()
 plt.tight_layout()
 plt.show()
 
+#%% Calculo el maximo espectral 
+kmax_R3 = np.argmax(np.abs(S_vent_R3[:, :N//2]), axis=1)
+kmax_F3 = np.argmax(np.abs(S_vent_F3[:, :N//2]), axis=1)
+kmax_B3 = np.argmax(np.abs(S_vent_B3[:, :N//2]), axis=1)
+kmax_H3 = np.argmax(np.abs(S_vent_H3[:, :N//2]), axis=1)
+
 #%% Estimador de amplitud SNR = 3dB
-estimador_a_R3 = np.abs(S_vent_R3[:, N//4])*2
-estimador_a_F3 = np.abs(S_vent_F3[:, N//4])*2
-estimador_a_B3 = np.abs(S_vent_B3[:, N//4])*2
-estimador_a_H3 = np.abs(S_vent_H3[:, N//4])*2
+estimador_a_R3 = 2*np.abs(S_vent_R3[np.arange(R), kmax_R3])/CG_R
+estimador_a_F3 = 2*np.abs(S_vent_F3[np.arange(R), kmax_F3])/CG_F
+estimador_a_B3 = 2*np.abs(S_vent_B3[np.arange(R), kmax_B3])/CG_B
+estimador_a_H3 = 2*np.abs(S_vent_H3[np.arange(R), kmax_H3])/CG_H
 
 #%% SESGO Y VARIANZA SNR = 3dB
 sesgo_R3 = np.mean(estimador_a_R3) - a0 
