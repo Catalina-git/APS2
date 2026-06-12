@@ -294,7 +294,7 @@ plt.legend()
 
 # RETARDO
 plt.subplot(3,1,3)
-plt.plot(ls_fir[1:], gd_fir_ls_ant)
+plt.plot(ls_fir_ant[1:], gd_fir_ls_ant)
 plt.title('FIR tipo III con cuadrados mínimos - Retardo de Grupo')
 plt.xlabel('Frecuencia [Hz]')
 plt.ylabel('τg [# muestras]')
