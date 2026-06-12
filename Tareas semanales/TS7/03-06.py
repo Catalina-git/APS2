@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
 from scipy import signal as sig
+from pytc2.sistemas_lineales import plot_plantilla
 
 # Frecuencia 
 fs = 1000 # Hz
@@ -20,8 +20,8 @@ ws2 = 45 # Hz
 gpass = 1 # dB
 gstop = 40 # dB 
 
-wp = [wp1, wp2] # Comienzo y fin de la banda de paso
-ws = [ws1, ws2] # Comienzo y fin de la banda de stop
+wp = (wp1, wp2) # Comienzo y fin de la banda de paso
+ws = (ws1, ws2) # Comienzo y fin de la banda de stop
 
 # Funciones de aproximacion 
 # ftype = 'butter'
@@ -29,6 +29,7 @@ ws = [ws1, ws2] # Comienzo y fin de la banda de stop
 # ftype = 'cheby2'
 # ftype = 'cauer'
 
+#%% Funciones de aproximacion 
 sos_f_butter = sig.iirdesign(wp, ws, gpass, gstop, analog = False, ftype = 'butter', output = 'sos', fs = fs) # Es de maxima planicidad en ambas bandas 
 sos_f_cauer = sig.iirdesign(wp, ws, gpass, gstop, analog = False, ftype = 'cauer', output = 'sos', fs = fs)
 sos_f_cheby2 = sig.iirdesign(wp, ws, gpass, gstop, analog = False, ftype = 'cheby2', output = 'sos', fs = fs)
@@ -42,64 +43,139 @@ sos_f_cheby2 = sig.iirdesign(wp, ws, gpass, gstop, analog = False, ftype = 'cheb
 # b_coeff,a_coeff = sig.iirdesign(wp, ws, gpass, gstop, analog = False, ftype = 'cheby2', output = 'ba', fs = fs) # Ahora voy al mundo digital (Transferencia tipo Cheby 2) 
 # Es equiripple en la banda de stop y max planicidad (parecido a max planicidad) en banda de paso
 
-taps = sos_f_butter.shape[0] * 2 # El por dos es porque son todos de segundo orden 
+#%% BUTTERWORTH
+taps_butter = sos_f_butter.shape[0] * 2 # El por dos es porque son todos de segundo orden 
+omega_butter, resp_freq_butter = sig.freqz_sos(sos_f_butter, worN = ww, fs = fs)
+phase_butter = np.unwrap(np.angle(resp_freq_butter))
+gd_butter = -np.diff(phase_butter) / np.diff(ww)
+gd_butter = np.append(gd_butter[0], gd_butter)
 
-omega, resp_freq = sig.freqz_sos(sos_f_butter, worN = ww, fs = fs)
+# GRAFICOS
 
-phase = np.unwrap(np.angle(resp_freq))
+# MODULO
+plt.figure(figsize=(12,10))
 
-# Graficos 
-fig, axs = plt.subplots(nrows = 2, ncols = 1, sharex = True, tight_layout = True)
-ax1, ax2 = axs
+plt.subplot(3,1,1)
+plt.plot(omega_butter, 20*np.log10(abs(resp_freq_butter)), label="FIR")
+plot_plantilla('bandpass', wp, gpass, ws, gstop, fs)
+plt.title('IIR Butterworth - Respuesta en Magnitud')
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('|H(ω)| [dB]')
+# plt.xlim(0, 500)
+plt.grid(True, which='both', ls=':')
+plt.legend()
 
-# Modulo
-ax1.set_title(f"Filtro Pasa-Banda IIR (SOS) + Plantilla de diseño - {taps} tap") # taps es la cantidad de coeficientes --> me va a dar el orden del filtro 
-ax1.plot(omega, 20 * np.log10(abs(resp_freq)), 'C0')
-ax1.set_ylabel("Amplitude in dB", color = 'C0')
-ax1.set_ylabel('Magnitud [dB]')
-ax1.grid(True)
-ax1.set_xlim([0,100])
-ax1.set_ylim([-60,5])
-ax1.legend()
+# FASE
+plt.subplot(3,1,2)
+plt.plot(omega_butter, phase_butter)
+plt.title('IIR Butterworth - Fase')
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('Fase [rad]')
+plt.xlim(0, 35)
+plt.grid(True, which='both', ls=':')
+plt.legend()
 
-# PLANTILLA DE DISEÑO
-# Banda stop izquierda
-ax1.fill_between(omega,-60,-gstop,where=(omega <= ws1),color='red', alpha=0.15)
+# RETARDO
+plt.subplot(3,1,3)
+plt.plot(ww, gd_butter)
+plt.title('IIR Butterworth - Retardo de Grupo')
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('τg [# muestras]')
+plt.xlim(0, 35)
+plt.grid(True, which='both', ls=':')
+plt.legend()
 
-# Banda de paso
-ax1.fill_between(omega,-gpass,1,where=((omega >= wp1) & (omega <= wp2)), color='green',alpha=0.2,label='bw digital')
-
-# Banda stop derecha
-ax1.fill_between(omega,-60,-gstop,where=(omega >= ws2),color='red',alpha=0.15)
-
-# CONTORNO DE LA PLANTILLA
-ax1.plot([0, ws1, ws1, wp1, wp1, wp2, wp2, ws2, ws2, 100],[-gstop, -gstop, -gstop, -gstop, 0, 0, -gstop, -gstop, -gstop, -gstop],'k--',lw=1.5,label='plantilla')
-
-# Fase
-phase = np.unwrap(np.angle(resp_freq)) # En este caso si me conviene usar unwrap, porque evito la discontinuidad en la fase
-ax2.plot(omega, phase, 'C1')
-ax2.set_ylabel('Phase [rad]', color = 'C1')
-ax2.grid(True)
-ax2.axis('tight')
-
+plt.tight_layout()
 plt.show()
 
-#%% RETARDO DE GRUPO
+#%% CAUER O ELIPTICO 
+taps_cauer = sos_f_cauer.shape[0] * 2 # El por dos es porque son todos de segundo orden 
+omega_cauer, resp_freq_cauer = sig.freqz_sos(sos_f_cauer, worN = ww, fs = fs)
+phase_cauer = np.unwrap(np.angle(resp_freq_cauer))
+gd_cauer = -np.diff(phase_cauer) / np.diff(ww)
+gd_cauer = np.append(gd_cauer[0], gd_cauer)
 
-gd = -np.diff(phase) / np.diff(ww)
-gd = np.append(gd[0], gd)
+# GRAFICOS
 
-fig, axs = plt.subplots(figsize=(6,6))
+# MODULO
+plt.figure(figsize=(12,10))
 
-axs.set_title('Retardo de grupo') 
-axs.plot(ww, gd, 'm')
-axs.set_xlabel('Frecuencia [Hz]')
-axs.set_ylabel('Retardo [muetras]')
-axs.grid(True, alpha = 0.5)
-axs.set_xlim(-10,fs/2)
-# axs.set_ylim([-20,20])
-axs.legend()
+plt.subplot(3,1,1)
+plt.plot(omega_cauer, 20*np.log10(abs(resp_freq_cauer)), label="FIR")
+plot_plantilla('bandpass', wp, gpass, ws, gstop, fs)
+plt.title('IIR Cauer o Elíptico - Respuesta en Magnitud')
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('|H(ω)| [dB]')
+# plt.xlim(0, 500)
+plt.grid(True, which='both', ls=':')
+plt.legend()
 
+# FASE
+plt.subplot(3,1,2)
+plt.plot(omega_cauer, phase_cauer)
+plt.title('IIR Cauer o Elíptico - Fase')
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('Fase [rad]')
+plt.xlim(0, 35)
+plt.grid(True, which='both', ls=':')
+plt.legend()
+
+# RETARDO
+plt.subplot(3,1,3)
+plt.plot(ww, gd_cauer)
+plt.title('IIR Cauer o Elíptico - Retardo de Grupo')
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('τg [# muestras]')
+plt.xlim(0, 35)
+plt.grid(True, which='both', ls=':')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+#%% CHEBYSHEV TIPO 2
+taps_cheby2 = sos_f_cheby2.shape[0] * 2 # El por dos es porque son todos de segundo orden 
+omega_cheby2, resp_freq_cheby2 = sig.freqz_sos(sos_f_cheby2, worN = ww, fs = fs)
+phase_cheby2 = np.unwrap(np.angle(resp_freq_cheby2))
+gd_cheby2 = -np.diff(phase_cheby2) / np.diff(ww)
+gd_cheby2 = np.append(gd_cheby2[0], gd_cheby2)
+
+# GRAFICOS
+
+# MODULO
+plt.figure(figsize=(12,10))
+
+plt.subplot(3,1,1)
+plt.plot(omega_cheby2, 20*np.log10(abs(resp_freq_cheby2)), label="FIR")
+plot_plantilla('bandpass', wp, gpass, ws, gstop, fs)
+plt.title('IIR Cauer o Elíptico - Respuesta en Magnitud')
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('|H(ω)| [dB]')
+# plt.xlim(0, 500)
+plt.grid(True, which='both', ls=':')
+plt.legend()
+
+# FASE
+plt.subplot(3,1,2)
+plt.plot(omega_cheby2, phase_cheby2)
+plt.title('IIR Cauer o Elíptico - Fase')
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('Fase [rad]')
+plt.xlim(0, 35)
+plt.grid(True, which='both', ls=':')
+plt.legend()
+
+# RETARDO
+plt.subplot(3,1,3)
+plt.plot(ww, gd_cheby2)
+plt.title('IIR Cauer o Elíptico - Retardo de Grupo')
+plt.xlabel('Frecuencia [Hz]')
+plt.ylabel('τg [# muestras]')
+plt.xlim(0, 35)
+plt.grid(True, which='both', ls=':')
+plt.legend()
+
+plt.tight_layout()
 plt.show()
 
 #%% Como implementamos el filtro? 
@@ -130,7 +206,6 @@ plt.plot(ECG_f_cheby2, label = 'ECG filtrado (sosfilt) - Cheby 2')
 plt.legend()
 plt.show()
 
-
 #%% Vamos a usar sosfiltfilt
 # Hace un backward - fordward 
 # Es un filtrado bidireccional, y lo que asume es como que pasas dos veces por la respuesta de modulo 
@@ -143,9 +218,7 @@ sos_ff_cauer = sig.iirdesign(wp, ws, gpass / 2, gstop / 2, analog = False, ftype
 sos_ff_cheby2 = sig.iirdesign(wp, ws, gpass / 2, gstop / 2, analog = False, ftype = 'cheby2', output = 'sos', fs = fs)
 
 taps = sos_ff_butter.shape[0] * 2 # El por dos es porque son todos de segundo orden 
-
 omega, resp_freq = sig.freqz_sos(sos_ff_butter, worN = ww, fs = fs)
-
 phase = np.unwrap(np.angle(resp_freq))
 
 ECG_ff_butter = sig.sosfiltfilt(sos_ff_butter, ecg_one_lead)
@@ -182,8 +255,6 @@ for ii in regs_interes:
     plt.plot(zoom_region, ECG_f_butter[zoom_region], label='Butter', linewidth=2)
     plt.plot(zoom_region, ECG_f_cauer[zoom_region], label='Cauer', linewidth=2)
     plt.plot(zoom_region, ECG_f_cheby2[zoom_region], label='Cheby 2', linewidth=2)
-    #plt.plot(zoom_region, ECG_f_butt[zoom_region], label='Butterworth')
-    #plt.plot(zoom_region, ECG_f_win[zoom_region + demora], label='FIR Window')
    
     plt.title('ECG with noise filtering example from ' + str(ii[0]) + ' to ' + str(ii[1]) )
     plt.ylabel('Adimensional')
@@ -213,8 +284,6 @@ for ii in regs_interes:
     plt.plot(zoom_region, ECG_ff_butter[zoom_region], label='Butter', linewidth=2)
     plt.plot(zoom_region, ECG_ff_cauer[zoom_region], label='Cauer', linewidth=2)
     plt.plot(zoom_region, ECG_ff_cheby2[zoom_region], label='Cheby 2', linewidth=2)
-    # plt.plot(zoom_region, yy_2[zoom_region], label='Butterworth')
-    # plt.plot(zoom_region, yy_2[zoom_region + gd], label='FIR Window')
    
     plt.title('ECG without noise filtering example from ' + str(ii[0]) + ' to ' + str(ii[1]) )
     plt.ylabel('Adimensional')
